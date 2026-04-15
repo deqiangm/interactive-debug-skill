@@ -180,6 +180,46 @@
 
 ---
 
+## 2026-04-15 Session 5
+
+### 已完成
+1. ✅ 创建jdb_conditional_breakpoint.sh (14KB)
+   - 条件断点支持: `set <session> <class> <line> "<condition>"`
+   - 临时断点支持: `set-temp <session> <class> <line>`
+   - 条件求值: `eval <session> "<expression>"`
+   - 条件检查: `check <session> "<condition>"`
+   - 后台监控: `monitor <session> <class> <line> [interval]`
+   - 断点管理: `list`, `clear`
+
+2. ✅ 解决了readonly变量冲突问题
+   - 使用`COND_BP_POLL_INTERVAL`代替`DEFAULT_POLL_INTERVAL`
+   - 兼容公共函数库functions.sh
+
+### 关键决策
+1. **条件断点实现**: 
+   - JDB本身不支持原生条件断点
+   - 通过设置普通断点 + eval求值条件 + 自动继续的方式模拟
+   - 支持后台监控自动处理条件检查
+
+2. **临时断点实现**:
+   - 复用条件断点机制
+   - 标记为temporary，命中后自动删除
+
+### 下一步
+- [ ] 观察点 (watch field access/modification)
+- [ ] 方法断点 (stop in Class.method)
+- [ ] 异常断点 (stop on exception)
+
+### 测试结果
+```bash
+$ ./jdb_conditional_breakpoint.sh --help
+# 显示完整帮助文档，包含所有命令和示例
+# 语法检查通过
+# 帮助输出正确
+```
+
+---
+
 ## 模板
 
 ```

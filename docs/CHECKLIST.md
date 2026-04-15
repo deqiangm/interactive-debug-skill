@@ -19,8 +19,8 @@
 ## Phase 2: Java调试增强
 
 ### 2.1 高级断点功能
-- [ ] 条件断点 (stop at Class:line if condition)
-- [ ] 临时断点 (hit once then remove)
+- [x] 条件断点 (stop at Class:line if condition)
+- [x] 临时断点 (hit once then remove)
 - [ ] 观察点 (watch field access/modification)
 - [ ] 方法断点 (stop in Class.method)
 - [ ] 异常断点 (stop on exception)
