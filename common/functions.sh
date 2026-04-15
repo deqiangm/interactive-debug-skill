@@ -1,28 +1,32 @@
 #!/bin/bash
 # ============================================================================
-# Common Functions Library - 调试工具公共函数库
+# Common Functions Library - Shared utilities for debugging tools
 # 
-# 提供所有调试脚本共用的基础功能
+# Provides:
+#   - Logging system (log, log_debug, log_info, log_warn, log_error)
+#   - Tmux session management (create, send, read, poll, kill)
+#   - Network utilities (check_port, wait_for_port)
+#   - File utilities (find_project_root, detect_project_type)
 # ============================================================================
 
-# 防止重复source
+# Prevent duplicate sourcing
 if [ -n "$_DEBUG_COMMON_LOADED" ]; then
     return 0
 fi
 _DEBUG_COMMON_LOADED=1
 
 # ============================================================================
-# 配置常量
+# Configuration Constants
 # ============================================================================
 
-# 颜色定义
+# Color definitions
 readonly RED='\033[0;31m'
 readonly GREEN='\033[0;32m'
 readonly YELLOW='\033[0;33m'
 readonly BLUE='\033[0;34m'
 readonly NC='\033[0m' # No Color
 
-# 默认配置
+# Default configuration
 readonly DEFAULT_POLL_INTERVAL=0.5
 readonly DEFAULT_TIMEOUT=60
 readonly DEFAULT_WAIT_TIME=5
@@ -30,11 +34,11 @@ readonly DEFAULT_DEBUG_PORT=5005
 readonly MAX_STABLE_COUNT=2
 
 # ============================================================================
-# 日志系统
+# Logging System
 # ============================================================================
 
-# 日志级别
-LOG_LEVEL="${LOG_LEVEL:-INFO}"  # DEBUG, INFO, WARN, ERROR
+# Log level (DEBUG, INFO, WARN, ERROR)
+LOG_LEVEL="${LOG_LEVEL:-INFO}"
 
 _log() {
     local level="$1"
@@ -63,20 +67,21 @@ log_info() { _log INFO "$*"; }
 log_warn() { _log WARN "$*"; }
 log_error() { _log ERROR "$*"; }
 
-# 简化的log函数（向后兼容）
+# Simplified log function (backward compatible)
 log() { log_info "$*"; }
 
-# 错误并退出
+# Log error and exit
 error() {
     log_error "$*"
     exit 1
 }
 
 # ============================================================================
-# Tmux Session 管理
+# Tmux Session Management
 # ============================================================================
 
-# 生成唯一的session名称
+# Generate unique session name
+# Usage: generate_session_name <prefix> <target>
 generate_session_name() {
     local prefix="$1"
     local target="$2"
@@ -85,13 +90,15 @@ generate_session_name() {
     echo "${prefix}_${sanitized}_${timestamp}"
 }
 
-# 检查session是否存在
+# Check if session exists
+# Usage: session_exists <session_name>
 session_exists() {
     local session_name="$1"
     tmux has-session -t "$session_name" 2>/dev/null
 }
 
-# 创建tmux session
+# Create tmux session
+# Usage: session_create <session_name> <command> [width] [height]
 session_create() {
     local session_name="$1"
     local command="$2"
@@ -108,7 +115,8 @@ session_create() {
     return 0
 }
 
-# 发送命令到session
+# Send command to session
+# Usage: session_send <session_name> <command>
 session_send() {
     local session_name="$1"
     local command="$2"
@@ -121,7 +129,8 @@ session_send() {
     log_debug "Sent to '$session_name': $command"
 }
 
-# 读取session输出
+# Read session output
+# Usage: session_read <session_name>
 session_read() {
     local session_name="$1"
     
@@ -132,7 +141,9 @@ session_read() {
     tmux capture-pane -t "$session_name" -p -S - 2>/dev/null
 }
 
-# Poll等待输出完成
+# Poll for output completion
+# Usage: session_poll <session_name> [timeout] [poll_interval] [prompt_pattern]
+# Returns: 0 on success, 124 on timeout
 session_poll() {
     local session_name="$1"
     local timeout="${2:-$DEFAULT_TIMEOUT}"
@@ -154,14 +165,14 @@ session_poll() {
         
         local current_output=$(session_read "$session_name")
         
-        # 检查提示符
+        # Check for prompt
         if echo "$current_output" | grep -qE "$prompt_pattern"; then
             log_debug "Prompt detected after ${poll_count} polls"
             echo "$current_output"
             return 0
         fi
         
-        # 检查输出稳定
+        # Check for output stability
         if [ "$current_output" = "$prev_output" ]; then
             stable_count=$((stable_count + 1))
             if [ $stable_count -ge $MAX_STABLE_COUNT ]; then
@@ -181,7 +192,8 @@ session_poll() {
     return 124
 }
 
-# 执行命令并poll
+# Execute command and poll for result
+# Usage: session_exec_poll <session_name> <command> [timeout] [poll_interval]
 session_exec_poll() {
     local session_name="$1"
     local command="$2"
@@ -192,7 +204,8 @@ session_exec_poll() {
     session_poll "$session_name" "$timeout" "$poll_interval"
 }
 
-# 等待特定模式
+# Wait for specific pattern in output
+# Usage: session_wait_for <session_name> <pattern> [timeout] [poll_interval]
 session_wait_for() {
     local session_name="$1"
     local pattern="$2"
@@ -223,7 +236,8 @@ session_wait_for() {
     return 124
 }
 
-# 终止session
+# Terminate session
+# Usage: session_kill <session_name>
 session_kill() {
     local session_name="$1"
     
@@ -235,7 +249,8 @@ session_kill() {
     fi
 }
 
-# 清理所有匹配前缀的session
+# Cleanup all sessions matching prefix
+# Usage: session_cleanup [prefix]
 session_cleanup() {
     local prefix="${1:-.*}"
     
@@ -245,7 +260,8 @@ session_cleanup() {
     done
 }
 
-# 列出所有session
+# List all sessions
+# Usage: session_list [prefix]
 session_list() {
     local prefix="${1:-.*}"
     
@@ -253,10 +269,11 @@ session_list() {
 }
 
 # ============================================================================
-# 网络工具
+# Network Utilities
 # ============================================================================
 
-# 检查端口是否可用
+# Check if port is available
+# Usage: check_port <host> <port>
 check_port() {
     local host="${1:-localhost}"
     local port="$2"
@@ -268,7 +285,8 @@ check_port() {
     nc -z "$host" "$port" 2>/dev/null
 }
 
-# 等待端口可用
+# Wait for port to become available
+# Usage: wait_for_port <host> <port> [timeout]
 wait_for_port() {
     local host="${1:-localhost}"
     local port="$2"
@@ -293,10 +311,11 @@ wait_for_port() {
 }
 
 # ============================================================================
-# 文件工具
+# File Utilities
 # ============================================================================
 
-# 查找项目根目录
+# Find project root directory
+# Usage: find_project_root [start_dir]
 find_project_root() {
     local start_dir="${1:-.}"
     local markers=("pom.xml" "build.gradle" "go.mod" "package.json" "requirements.txt" "Cargo.toml")
@@ -317,7 +336,8 @@ find_project_root() {
     return 1
 }
 
-# 检测项目类型
+# Detect project type
+# Usage: detect_project_type <project_dir>
 detect_project_type() {
     local project_dir="$1"
     
@@ -339,16 +359,18 @@ detect_project_type() {
 }
 
 # ============================================================================
-# 字符串工具
+# String Utilities
 # ============================================================================
 
-# 安全引用字符串（用于命令行）
+# Safely quote string for command line
+# Usage: shell_quote <string>
 shell_quote() {
     local str="$1"
     printf '%q' "$str"
 }
 
-# 提取JSON字段
+# Extract JSON field value
+# Usage: json_get <json_string> <field_path>
 json_get() {
     local json="$1"
     local field="$2"
@@ -357,10 +379,11 @@ json_get() {
 }
 
 # ============================================================================
-# 验证工具
+# Validation Utilities
 # ============================================================================
 
-# 验证必需命令存在
+# Verify required commands exist
+# Usage: require_commands <cmd1> [cmd2] ...
 require_commands() {
     local missing=()
     
@@ -375,7 +398,8 @@ require_commands() {
     fi
 }
 
-# 验证环境变量
+# Verify environment variables are set
+# Usage: require_env <var1> [var2] ...
 require_env() {
     local missing=()
     
@@ -391,10 +415,11 @@ require_env() {
 }
 
 # ============================================================================
-# 帮助系统
+# Help System
 # ============================================================================
 
-# 显示使用帮助
+# Display usage help
+# Usage: show_help <script_name> <description> <commands>
 show_help() {
     local script_name="$1"
     local description="$2"
@@ -403,38 +428,38 @@ show_help() {
     cat << EOF
 $script_name - $description
 
-用法:
+Usage:
     $script_name <command> [arguments...]
 
-命令:
+Commands:
 $commands
 
-选项:
-    -h, --help      显示此帮助信息
-    -v, --verbose   启用详细输出
+Options:
+    -h, --help      Show this help message
+    -v, --verbose   Enable verbose output
 
-环境变量:
-    LOG_LEVEL       日志级别 (DEBUG, INFO, WARN, ERROR)
+Environment Variables:
+    LOG_LEVEL       Log level (DEBUG, INFO, WARN, ERROR)
 
-示例:
+Examples:
     $script_name --help
 
 EOF
 }
 
 # ============================================================================
-# 初始化检查
+# Initialization Checks
 # ============================================================================
 
-# 检查基础依赖
+# Check base dependencies
 check_dependencies() {
     require_commands tmux bc
     
-    # jq是可选的，但推荐
+    # jq is optional but recommended
     if ! command -v jq &>/dev/null; then
         log_warn "jq not found, JSON parsing will be limited"
     fi
 }
 
-# 运行初始化检查
+# Run initialization checks
 check_dependencies

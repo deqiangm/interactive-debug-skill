@@ -1,8 +1,15 @@
 #!/bin/bash
 # ============================================================================
-# PDB Session Manager - Python调试器Session管理
+# PDB Session Manager - Python debugger session management with tmux
 # 
-# 基于tmux的pdb session隔离和通信
+# Features:
+#   - Create isolated pdb sessions in tmux
+#   - Support for virtualenv
+#   - Breakpoint management (set, conditional, clear)
+#   - Execution control (run, step, next, continue, return)
+#   - Variable inspection (print, pretty-print, locals, list)
+#   - Call stack navigation (where, up, down)
+#   - Advanced features (exec, watch)
 # ============================================================================
 
 set -e
@@ -11,55 +18,57 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../../../common/functions.sh"
 
 # ============================================================================
-# Python特定配置
+# Python-specific Configuration
 # ============================================================================
 
 DEFAULT_PDB_PORT=5678
 
 # ============================================================================
-# Session管理
+# Session Management
 # ============================================================================
 
-# 创建pdb session
+# Create pdb session
+# Usage: create_pdb_session <session_name> <python_script> [args]
 create_pdb_session() {
     local session_name="$1"
     local python_script="$2"
     local python_args="${3:-}"
     
-    # 检查Python是否存在
+    # Check if Python exists
     if ! command -v python3 &>/dev/null; then
         error "python3 not found"
     fi
     
-    # 构建pdb命令
+    # Build pdb command
     local pdb_cmd="python3 -m pdb $python_script"
     [ -n "$python_args" ] && pdb_cmd="$pdb_cmd $python_args"
     
     log "Creating PDB session: $session_name"
     log "Script: $python_script"
     
-    # 创建tmux session
+    # Create tmux session
     session_create "$session_name" "$pdb_cmd"
     
-    # 等待pdb初始化
+    # Wait for pdb initialization
     sleep 1
     
     echo "SESSION_NAME=$session_name"
 }
 
-# 创建pdb session（带virtualenv）
+# Create pdb session with virtualenv
+# Usage: create_pdb_session_venv <session_name> <python_script> <venv_path> [args]
 create_pdb_session_venv() {
     local session_name="$1"
     local python_script="$2"
     local venv_path="$3"
     local python_args="${4:-}"
     
-    # 验证virtualenv
+    # Verify virtualenv
     if [ ! -f "$venv_path/bin/activate" ]; then
         error "Virtualenv not found: $venv_path"
     fi
     
-    # 构建命令（先激活virtualenv）
+    # Build command (activate virtualenv first)
     local pdb_cmd="source $venv_path/bin/activate && python -m pdb $python_script"
     [ -n "$python_args" ] && pdb_cmd="$pdb_cmd $python_args"
     
@@ -74,19 +83,22 @@ create_pdb_session_venv() {
 }
 
 # ============================================================================
-# 断点管理
+# Breakpoint Management
 # ============================================================================
 
-# 设置断点
+# Set breakpoint
+# Usage: pdb_set_breakpoint <session> <location>
+# location: filename:lineno or function_name
 pdb_set_breakpoint() {
     local session_name="$1"
-    local location="$2"  # filename:lineno 或 function_name
+    local location="$2"  # filename:lineno or function_name
     
     session_send "$session_name" "b $location"
     session_poll "$session_name" 5 0.5 "[(]pdb[)]"
 }
 
-# 设置条件断点
+# Set conditional breakpoint
+# Usage: pdb_set_conditional_breakpoint <session> <location> <condition>
 pdb_set_conditional_breakpoint() {
     local session_name="$1"
     local location="$2"
@@ -96,10 +108,11 @@ pdb_set_conditional_breakpoint() {
     session_poll "$session_name" 5 0.5 "[(]pdb[)]"
 }
 
-# 清除断点
+# Clear breakpoint
+# Usage: pdb_clear_breakpoint <session> [bp_num]
 pdb_clear_breakpoint() {
     local session_name="$1"
-    local bp_num="${2:-}"  # 可选，不指定则清除所有
+    local bp_num="${2:-}"  # Optional, clear all if not specified
     
     if [ -n "$bp_num" ]; then
         session_send "$session_name" "cl $bp_num"
@@ -109,7 +122,8 @@ pdb_clear_breakpoint() {
     session_poll "$session_name" 5 0.5 "[(]pdb[)]"
 }
 
-# 列出断点
+# List breakpoints
+# Usage: pdb_list_breakpoints <session>
 pdb_list_breakpoints() {
     local session_name="$1"
     
@@ -118,10 +132,11 @@ pdb_list_breakpoints() {
 }
 
 # ============================================================================
-# 执行控制
+# Execution Control
 # ============================================================================
 
-# 运行程序
+# Run program
+# Usage: pdb_run <session>
 pdb_run() {
     local session_name="$1"
     
@@ -129,7 +144,8 @@ pdb_run() {
     session_poll "$session_name" 30 0.5 "[(]pdb[)]|->"
 }
 
-# 单步执行（进入函数）
+# Step into function
+# Usage: pdb_step <session>
 pdb_step() {
     local session_name="$1"
     
@@ -137,7 +153,8 @@ pdb_step() {
     session_poll "$session_name" 5 0.5 "[(]pdb[)]"
 }
 
-# 单步执行（不进入函数）
+# Step over (don't enter function)
+# Usage: pdb_next <session>
 pdb_next() {
     local session_name="$1"
     
@@ -145,7 +162,8 @@ pdb_next() {
     session_poll "$session_name" 5 0.5 "[(]pdb[)]"
 }
 
-# 继续执行
+# Continue execution
+# Usage: pdb_continue <session>
 pdb_continue() {
     local session_name="$1"
     
@@ -153,7 +171,8 @@ pdb_continue() {
     session_poll "$session_name" 30 0.5 "[(]pdb[)]"
 }
 
-# 返回上一级
+# Return from current function
+# Usage: pdb_return <session>
 pdb_return() {
     local session_name="$1"
     
@@ -161,20 +180,22 @@ pdb_return() {
     session_poll "$session_name" 5 0.5 "[(]pdb[)]"
 }
 
-# 退出
+# Quit debugging
+# Usage: pdb_quit <session>
 pdb_quit() {
     local session_name="$1"
     
     session_send "$session_name" "q"
     sleep 0.5
-    session_send "$session_name" "y"  # 确认退出
+    session_send "$session_name" "y"  # Confirm quit
 }
 
 # ============================================================================
-# 变量查看
+# Variable Inspection
 # ============================================================================
 
-# 打印变量
+# Print expression
+# Usage: pdb_print <session> <expression>
 pdb_print() {
     local session_name="$1"
     local expression="$2"
@@ -183,7 +204,8 @@ pdb_print() {
     session_poll "$session_name" 5 0.5 "[(]pdb[)]"
 }
 
-# 打印变量（完整）
+# Pretty print expression
+# Usage: pdb_pretty_print <session> <expression>
 pdb_pretty_print() {
     local session_name="$1"
     local expression="$2"
@@ -192,7 +214,8 @@ pdb_pretty_print() {
     session_poll "$session_name" 5 0.5 "[(]pdb[)]"
 }
 
-# 列出局部变量
+# List local variables (arguments)
+# Usage: pdb_locals <session>
 pdb_locals() {
     local session_name="$1"
     
@@ -200,20 +223,22 @@ pdb_locals() {
     session_poll "$session_name" 5 0.5 "[(]pdb[)]"
 }
 
-# 列出源代码
+# List source code
+# Usage: pdb_list <session> [lines]
 pdb_list() {
     local session_name="$1"
-    local lines="${2:-11}"  # 显示行数
+    local lines="${2:-11}"  # Number of lines to display
     
     session_send "$session_name" "l $lines"
     session_poll "$session_name" 5 0.5 "[(]pdb[)]"
 }
 
 # ============================================================================
-# 调用栈
+# Call Stack
 # ============================================================================
 
-# 打印调用栈
+# Print call stack (where)
+# Usage: pdb_where <session>
 pdb_where() {
     local session_name="$1"
     
@@ -221,7 +246,8 @@ pdb_where() {
     session_poll "$session_name" 5 0.5 "[(]pdb[)]"
 }
 
-# 向上移动调用栈
+# Move up call stack
+# Usage: pdb_up <session>
 pdb_up() {
     local session_name="$1"
     
@@ -229,7 +255,8 @@ pdb_up() {
     session_poll "$session_name" 5 0.5 "[(]pdb[)]"
 }
 
-# 向下移动调用栈
+# Move down call stack
+# Usage: pdb_down <session>
 pdb_down() {
     local session_name="$1"
     
@@ -238,10 +265,11 @@ pdb_down() {
 }
 
 # ============================================================================
-# 高级功能
+# Advanced Features
 # ============================================================================
 
-# 执行Python语句
+# Execute Python statement
+# Usage: pdb_exec <session> <statement>
 pdb_exec() {
     local session_name="$1"
     local statement="$2"
@@ -250,7 +278,8 @@ pdb_exec() {
     session_poll "$session_name" 5 0.5 "[(]pdb[)]"
 }
 
-# 设置变量值
+# Set variable value
+# Usage: pdb_set_var <session> <var_name> <var_value>
 pdb_set_var() {
     local session_name="$1"
     local var_name="$2"
@@ -259,7 +288,8 @@ pdb_set_var() {
     pdb_exec "$session_name" "$var_name = $var_value"
 }
 
-# 导入模块
+# Import module
+# Usage: pdb_import <session> <module>
 pdb_import() {
     local session_name="$1"
     local module="$2"
@@ -267,35 +297,37 @@ pdb_import() {
     pdb_exec "$session_name" "import $module"
 }
 
-# 监视表达式（每次暂停时自动打印）
+# Watch expression (auto-print on each stop)
+# Usage: pdb_watch <session> <expression>
 pdb_watch() {
     local session_name="$1"
     local expression="$2"
     
-    # PDB没有内置的watch命令，使用display模拟
+    # PDB uses 'display' for watch-like behavior
     session_send "$session_name" "display $expression"
     session_poll "$session_name" 5 0.5 "[(]pdb[)]"
 }
 
 # ============================================================================
-# 快速启动
+# Quick Start
 # ============================================================================
 
-# 快速启动Python调试
+# Quick start Python debugging
+# Usage: pdb_quick_start <project_dir> <script_name> [args]
 pdb_quick_start() {
     local project_dir="$1"
     local script_name="$2"
     local args="${3:-}"
     
-    # 查找脚本
+    # Find script
     local script_path="$project_dir/$script_name"
     if [ ! -f "$script_path" ]; then
-        # 尝试在子目录查找
+        # Try to find in subdirectories
         script_path=$(find "$project_dir" -name "$script_name" -type f 2>/dev/null | head -1)
         [ -z "$script_path" ] && error "Script not found: $script_name"
     fi
     
-    # 检测virtualenv
+    # Detect virtualenv
     local venv_path=""
     if [ -f "$project_dir/venv/bin/activate" ]; then
         venv_path="$project_dir/venv"
@@ -303,10 +335,10 @@ pdb_quick_start() {
         venv_path="$project_dir/.venv"
     fi
     
-    # 生成session名称
+    # Generate session name
     local session_name="pdb_$(basename "$script_name" .py)_$$"
     
-    # 创建session
+    # Create session
     if [ -n "$venv_path" ]; then
         create_pdb_session_venv "$session_name" "$script_path" "$venv_path" "$args"
     else
@@ -328,96 +360,96 @@ pdb_quick_start() {
 }
 
 # ============================================================================
-# 主程序
+# Main Entry Point
 # ============================================================================
 
 show_usage() {
     cat << EOF
-PDB Session Manager - Python调试器Session管理
+PDB Session Manager - Python debugger session management
 
-用法:
+Usage:
     $0 <command> [arguments...]
 
-命令:
-    # Session管理
+Commands:
+    # Session management
     create <session> <script.py> [args]
-        创建pdb session
-        示例: $0 create mysession test.py --arg1 value1
+        Create pdb session
+        Example: $0 create mysession test.py --arg1 value1
     
     create-venv <session> <script.py> <venv_path> [args]
-        创建pdb session（带virtualenv）
-        示例: $0 create-venv mysession test.py ./venv
+        Create pdb session with virtualenv
+        Example: $0 create-venv mysession test.py ./venv
     
     quick-start <project_dir> <script.py> [args]
-        快速启动（自动检测virtualenv）
+        Quick start (auto-detect virtualenv)
     
-    # 断点
+    # Breakpoints
     bp <session> <file:line>
-        设置断点
-        示例: $0 bp mysession main.py:10
+        Set breakpoint
+        Example: $0 bp mysession main.py:10
     
     bp-cond <session> <file:line> <condition>
-        设置条件断点
-        示例: $0 bp-cond mysession main.py:10 "i > 5"
+        Set conditional breakpoint
+        Example: $0 bp-cond mysession main.py:10 "i > 5"
     
     bp-list <session>
-        列出所有断点
+        List all breakpoints
     
     bp-clear <session> [bp_num]
-        清除断点
+        Clear breakpoint(s)
     
-    # 执行控制
+    # Execution control
     run <session>
-        运行程序
+        Run program
     
     step <session>
-        单步执行（进入函数）
+        Step into function
     
     next <session>
-        单步执行（不进入函数）
+        Step over (don't enter function)
     
     cont <session>
-        继续执行
+        Continue execution
     
-    # 变量
+    # Variables
     print <session> <expression>
-        打印表达式
-        示例: $0 print mysession "my_var"
+        Print expression
+        Example: $0 print mysession "my_var"
     
     locals <session>
-        列出局部变量
+        List local variables
     
     list <session> [lines]
-        列出源代码
+        List source code
     
-    # 调用栈
+    # Call stack
     where <session>
-        打印调用栈
+        Print call stack
     
     up <session>
-        向上移动调用栈
+        Move up call stack
     
     down <session>
-        向下移动调用栈
+        Move down call stack
     
-    # 高级
+    # Advanced
     exec <session> <statement>
-        执行Python语句
+        Execute Python statement
     
     watch <session> <expression>
-        监视表达式
+        Watch expression (auto-print on stop)
     
-    # Session管理
+    # Session management
     kill <session>
-        终止session
+        Terminate session
     
     cleanup
-        清理所有pdb session
+        Clean up all pdb sessions
 
 EOF
 }
 
-# 入口
+# Entry point
 if [ $# -lt 1 ]; then
     show_usage
     exit 1
