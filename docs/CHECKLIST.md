@@ -23,7 +23,7 @@
 - [x] 临时断点 (hit once then remove)
 - [x] 观察点 (watch field access/modification)
 - [x] 方法断点 (stop in Class.method)
-- [ ] 异常断点 (stop on exception)
+- [x] 异常断点 (stop on exception)
 
 ### 2.2 调试辅助功能
 - [ ] 变量监视脚本

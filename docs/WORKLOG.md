@@ -294,7 +294,54 @@ $ ./jdb_method_breakpoint.sh --help
 ```
 
 ### 下一步
-- [ ] 异常断点 (stop on exception)
+- [ ] 变量监视脚本
+- [ ] 表达式求值脚本
+- [ ] 线程分析脚本
+
+---
+
+## 2026-04-15 Session 8
+
+### 已完成
+1. ✅ 创建jdb_exception_breakpoint.sh (20KB)
+ - 异常断点: `set <session> <ExceptionClass> [temp]`
+ - 短名称支持: `set-short <session> <ShortName> [temp]`
+ - 快捷命令: `npe`, `array-bounds`, `all`, `uncaught`
+ - 清除断点: `clear`, `clear-all`
+ - 列出断点: `list`, `list-jdb`
+ - 后台监控: `monitor <session> <ExceptionClass> [interval]`
+ - 异常分析: `analyze <session>`
+ - 常见异常: `common` (显示常见异常类型列表)
+ - 16种常见异常类型的短名称映射 (NPE, AIOOBE, CCE等)
+
+2. ✅ 更新CHECKLIST.md
+ - 标记"异常断点"任务为已完成
+
+### 关键决策
+1. **异常断点实现**:
+ - JDB原生支持异常断点: `catch <exception_class>`
+ - 使用ignore命令清除异常断点
+ - 支持临时断点（命中后自动删除）
+ - 支持短名称映射（NPE → NullPointerException）
+
+2. **功能设计**:
+ - 提供快捷命令设置常见异常断点（NPE最常用）
+ - 异常命中后显示有用的调试命令
+ - analyze命令帮助分析异常堆栈
+
+### 测试结果
+```bash
+$ ./jdb_exception_breakpoint.sh --help
+# 显示完整帮助文档
+# 包含命令说明、短名称映射、工作原理、注意事项
+# 语法检查通过
+
+$ ./jdb_exception_breakpoint.sh common
+# 显示16种常见异常类型的表格
+# 包含短名称和中文描述
+```
+
+### 下一步
 - [ ] 变量监视脚本
 - [ ] 表达式求值脚本
 
