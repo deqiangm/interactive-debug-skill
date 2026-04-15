@@ -206,7 +206,7 @@
    - 标记为temporary，命中后自动删除
 
 ### 下一步
-- [ ] 观察点 (watch field access/modification)
+- [x] 观察点 (watch field access/modification) - 已完成
 - [ ] 方法断点 (stop in Class.method)
 - [ ] 异常断点 (stop on exception)
 
@@ -216,6 +216,42 @@ $ ./jdb_conditional_breakpoint.sh --help
 # 显示完整帮助文档，包含所有命令和示例
 # 语法检查通过
 # 帮助输出正确
+```
+
+---
+
+## 2026-04-15 Session 6
+
+### 已完成
+1. ✅ 创建jdb_watchpoint.sh (18KB)
+   - 访问观察点: `access <session> <class> <field>`
+   - 修改观察点: `mod <session> <class> <field>`
+   - 完全观察点: `all <session> <class> <field>`
+   - 清除观察点: `clear`, `clear-all`
+   - 列出观察点: `list`, `list-jdb`
+   - 后台监控: `monitor <session> <class> <field> [interval]`
+   - 智能建议: `suggest <session> <class>`
+
+2. ✅ 更新CHECKLIST.md
+   - 标记"观察点"任务为已完成
+
+### 关键决策
+1. **观察点实现**:
+   - JDB原生支持观察点命令: `watch access|modification|all <class>.<field>`
+   - 使用临时文件存储观察点状态信息
+   - 支持命中计数和状态追踪
+
+2. **功能设计**:
+   - 三种观察点类型满足不同调试需求
+   - suggest命令帮助用户分析类字段并建议观察点
+   - monitor后台监控观察点命中并通知
+
+### 测试结果
+```bash
+$ ./jdb_watchpoint.sh --help
+# 显示完整帮助文档
+# 包含观察点类型说明、示例、注意事项
+# 语法检查通过
 ```
 
 ---
