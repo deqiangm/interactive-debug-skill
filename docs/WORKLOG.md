@@ -173,6 +173,11 @@
 - [ ] 创建Node.js支持
 - [ ] 编写JAVA_DEBUG_GUIDE.md
 
+### 遇到的问题
+- SSH密钥验证失败，无法自动推送到GitHub
+- 需要配置SSH密钥或使用HTTPS方式推送
+- 本地commit已完成：`713c898 feat: create SKILL.md skill definition file`
+
 ---
 
 ## 模板
