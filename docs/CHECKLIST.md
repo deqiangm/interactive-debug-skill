@@ -12,7 +12,7 @@
 - [x] 标准化错误处理和日志系统
 - [x] 创建配置文件模板
 - [x] 编写完整的README.md
-- [ ] 创建SKILL.md skill定义文件
+- [x] 创建SKILL.md skill定义文件
 
 ---
 

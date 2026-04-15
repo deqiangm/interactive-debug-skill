@@ -64,12 +64,41 @@
  - CHECKLIST.md - 任务追踪
  - WORKLOG.md - 工作日志
 
+---
+
+## 2026-04-15 Session 3
+
+### 已完成
+1. ✅ 创建Python pdb_session.sh (13KB)
+ - 支持create, quick-start命令
+ - 断点管理: bp, bp-cond, bp-list, bp-clear
+ - 执行控制: run, step, next, cont, return
+ - 变量查看: print, pretty-print, locals, list
+ - 调用栈: where, up, down
+ - 高级功能: exec, watch
+
+2. ✅ Python pdb测试通过
+ - 创建bubble_sort.py测试脚本
+ - 设置断点、运行、单步执行
+ - 查看变量、数组内容
+ - 验证交换后的数组变化: [64,34,...] → [34,25,64,...]
+
+### 关键决策
+1. **等待时间**: 将默认等待时间从1-2秒增加到5-30秒
+ - DEFAULT_WAIT_TIME=5秒
+ - 断点命中后等待30秒
+
+2. **PDB条件断点**: PDB原生支持条件断点
+ - 语法: `b file:line, condition`
+ - 比JDB更简单
+
 ### 下一步
 - [x] 创建公共函数库
 - [x] 实现条件断点脚本
-- [x] 编写完整的README.md
-- [ ] 创建SKILL.md skill定义文件
-- [ ] 创建Python pdb支持
+- [x] 创建Python pdb支持
+- [ ] 创建Go delve支持
+- [ ] 创建Node.js支持
+- [ ] 编写SKILL.md
 
 ### 关键决策
 1. **架构决策**: 使用语言隔离的目录结构
@@ -100,10 +129,49 @@
 
 ### 遇到的问题
 - JDB不支持直接的条件断点语法，需要手动检查条件
+- Git push需要SSH密钥认证配置，暂时无法自动推送
 
 ### 待讨论
 1. 是否需要支持Rust？(rust-gdb/rust-lldb)
 2. LLM集成使用哪个API？
+
+---
+
+## 2026-04-15 Session 4
+
+### 已完成
+1. ✅ 创建SKILL.md skill定义文件 (14KB)
+ - 完整的YAML frontmatter定义
+ - 核心理念和项目结构说明
+ - 多语言支持表格（Java/Python/Go/Node.js）
+ - 快速开始指南（Java和Python示例）
+ - 公共函数库详细API文档
+ - Poll机制详解和实现原理
+ - Java高级断点完整文档
+ - Python调试pdb_session.sh使用文档
+ - 命名约定表格
+ - 典型调试流程示例（Java冒泡排序）
+ - 实践经验和常见问题排查
+ - Cron Job项目管理说明
+ - 开发状态追踪
+
+### 关键决策
+1. **SKILL.md结构**: 参考现有interactive-debug skill格式
+ - 使用YAML frontmatter定义name/description/tags
+ - 分模块组织文档（快速开始、API、最佳实践）
+ - 包含大量代码示例和表格
+
+2. **内容更新**: 反映当前项目实际状态
+ - Phase 1基础设施已完成
+ - Java高级断点功能已完成
+ - Python pdb基础支持已完成
+ - Go/Node.js标记为计划中
+
+### 下一步
+- [ ] 实现Java条件断点脚本（Phase 2.1）
+- [ ] 创建Go delve支持
+- [ ] 创建Node.js支持
+- [ ] 编写JAVA_DEBUG_GUIDE.md
 
 ---
 
