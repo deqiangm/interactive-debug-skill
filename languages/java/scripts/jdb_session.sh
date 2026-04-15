@@ -119,21 +119,104 @@ session_send() {
     log "Sent command to '$session_name': $command"
 }
 
-# 从session读取输出
-# 用法: session_read <session_name> [timeout_seconds]
+# 从session读取当前输出（无等待）
+# 用法: session_read <session_name>
 session_read() {
     local session_name="$1"
-    local timeout="${2:-2}"
     
     if ! session_exists "$session_name"; then
         error "Session '$session_name' not found"
     fi
     
     # 捕获pane内容
-    tmux capture-pane -t "$session_name" -p | head -n -1  # 排除最后一行（可能是光标行）
+    tmux capture-pane -t "$session_name" -p -S - 2>/dev/null
 }
 
-# 执行命令并获取结果（组合send + read）
+# Poll等待输出完成（智能等待）
+# 用法: session_poll <session_name> [timeout_seconds] [poll_interval_seconds]
+# 
+# 工作原理:
+# 1. 每隔poll_interval检查一次输出
+# 2. 检测JDB提示符 "> " 或 ">]" 表示输出完成
+# 3. 输出稳定（连续2次相同）则认为完成
+# 4. 超过timeout则返回当前内容
+#
+# 返回:
+#   - 读取到的完整输出
+#   - 退出码: 0=正常完成, 124=超时
+session_poll() {
+    local session_name="$1"
+    local timeout="${2:-60}"
+    local poll_interval="${3:-0.5}"
+    
+    if ! session_exists "$session_name"; then
+        error "Session '$session_name' not found"
+    fi
+    
+    # 计算最大poll次数
+    local max_polls=$(echo "$timeout / $poll_interval" | bc)
+    local poll_count=0
+    local prev_output=""
+    local stable_count=0
+    local max_stable=2  # 连续稳定次数
+    
+    # JDB提示符模式（表示可以输入新命令）
+    local prompt_pattern='(^|\n)[[:space:]]*>[[:space:]]*$|^[[:space:]]*>[[[:space:]]'
+    
+    while [ $poll_count -lt $max_polls ]; do
+        sleep "$poll_interval"
+        poll_count=$((poll_count + 1))
+        
+        # 读取当前输出
+        local current_output=$(session_read "$session_name")
+        
+        # 检查是否出现提示符（输出完成）
+        if echo "$current_output" | grep -qE "$prompt_pattern"; then
+            log "Output complete (prompt detected after ${poll_count} polls)"
+            echo "$current_output"
+            return 0
+        fi
+        
+        # 检查输出是否稳定（连续相同）
+        if [ "$current_output" = "$prev_output" ]; then
+            stable_count=$((stable_count + 1))
+            if [ $stable_count -ge $max_stable ]; then
+                log "Output stable after ${poll_count} polls"
+                echo "$current_output"
+                return 0
+            fi
+        else
+            stable_count=0
+        fi
+        
+        prev_output="$current_output"
+    done
+    
+    # 超时返回当前内容
+    log "Poll timeout after ${timeout}s (${poll_count} polls)"
+    session_read "$session_name"
+    return 124
+}
+
+# 执行命令并poll等待结果
+# 用法: session_exec_poll <session_name> <command> [timeout] [poll_interval]
+session_exec_poll() {
+    local session_name="$1"
+    local command="$2"
+    local timeout="${3:-60}"
+    local poll_interval="${4:-0.5}"
+    
+    # 清空之前的输出缓冲（发送空命令获取干净状态）
+    session_send "$session_name" "" 2>/dev/null || true
+    
+    # 发送命令
+    session_send "$session_name" "$command"
+    
+    # Poll等待结果
+    session_poll "$session_name" "$timeout" "$poll_interval"
+}
+
+# 执行命令并获取结果（固定等待，兼容旧接口）
 # 用法: session_exec <session_name> <command> [wait_seconds]
 session_exec() {
     local session_name="$1"
@@ -143,6 +226,59 @@ session_exec() {
     session_send "$session_name" "$command"
     sleep "$wait"
     session_read "$session_name"
+}
+
+# 等待特定输出模式出现
+# 用法: session_wait_for <session_name> <pattern> [timeout_seconds]
+# 例如: session_wait_for my_session "Breakpoint hit" 30
+session_wait_for() {
+    local session_name="$1"
+    local pattern="$2"
+    local timeout="${3:-60}"
+    local poll_interval="${4:-0.5}"
+    
+    if ! session_exists "$session_name"; then
+        error "Session '$session_name' not found"
+    fi
+    
+    local max_polls=$(echo "$timeout / $poll_interval" | bc)
+    local poll_count=0
+    
+    while [ $poll_count -lt $max_polls ]; do
+        sleep "$poll_interval"
+        poll_count=$((poll_count + 1))
+        
+        local output=$(session_read "$session_name")
+        
+        if echo "$output" | grep -qE "$pattern"; then
+            log "Pattern '$pattern' found after ${poll_count} polls"
+            echo "$output"
+            return 0
+        fi
+    done
+    
+    log "Pattern '$pattern' not found after ${timeout}s"
+    return 124
+}
+
+# 等待断点命中
+# 用法: session_wait_breakpoint <session_name> [timeout_seconds]
+session_wait_breakpoint() {
+    local session_name="$1"
+    local timeout="${2:-60}"
+    
+    # 断点命中的典型输出模式
+    # "Breakpoint hit: "thread=main", com.example.Test.main(), line=42 bci=0"
+    session_wait_for "$session_name" "Breakpoint hit|Step completed" "$timeout"
+}
+
+# 等待程序终止
+# 用法: session_wait_exit <session_name> [timeout_seconds]
+session_wait_exit() {
+    local session_name="$1"
+    local timeout="${2:-60}"
+    
+    session_wait_for "$session_name" "The application exited|The VM has been disconnected" "$timeout"
 }
 
 # ============================================================================
@@ -243,8 +379,13 @@ Session管理:
 
 输入输出:
     send <session_name> <command>            发送命令到session
-    read <session_name>                      读取session输出
-    exec <session_name> <command> [wait]     执行命令并获取结果
+    read <session_name>                      读取session当前输出
+    poll <session_name> [timeout] [interval] Poll等待输出完成（智能）
+    exec <session_name> <command> [wait]     执行命令并获取结果（固定等待）
+    exec-poll <session> <cmd> [timeout] [interval] 执行命令并poll等待
+    wait-for <session> <pattern> [timeout]   等待特定输出模式
+    wait-breakpoint <session> [timeout]      等待断点命中
+    wait-exit <session> [timeout]            等待程序终止
 
 JDB操作:
     bp <session_name> <class> <line>         设置断点
@@ -273,6 +414,19 @@ JDB操作:
     # 查看变量
     $0 print my_session user.name
     $0 dump my_session user
+    
+    # === 智能Poll等待（推荐） ===
+    # 执行命令并智能等待（0.5s poll, 60s超时）
+    $0 exec-poll my_session "where" 30 0.5
+    
+    # 等待断点命中
+    $0 wait-breakpoint my_session 60
+    
+    # 等待程序结束
+    $0 wait-exit my_session 120
+    
+    # 等待特定输出
+    $0 wait-for my_session "NullPointerException" 30
 
 EOF
 }
@@ -316,6 +470,26 @@ case "$command" in
     exec)
         [ $# -lt 2 ] && error "Usage: $0 exec <session_name> <command> [wait]"
         session_exec "$1" "$2" "${3:-1}"
+        ;;
+    poll)
+        [ $# -lt 1 ] && error "Usage: $0 poll <session_name> [timeout] [interval]"
+        session_poll "$1" "${2:-60}" "${3:-0.5}"
+        ;;
+    exec-poll)
+        [ $# -lt 2 ] && error "Usage: $0 exec-poll <session_name> <command> [timeout] [interval]"
+        session_exec_poll "$1" "$2" "${3:-60}" "${4:-0.5}"
+        ;;
+    wait-for)
+        [ $# -lt 2 ] && error "Usage: $0 wait-for <session_name> <pattern> [timeout]"
+        session_wait_for "$1" "$2" "${3:-60}"
+        ;;
+    wait-breakpoint)
+        [ $# -lt 1 ] && error "Usage: $0 wait-breakpoint <session_name> [timeout]"
+        session_wait_breakpoint "$1" "${2:-60}"
+        ;;
+    wait-exit)
+        [ $# -lt 1 ] && error "Usage: $0 wait-exit <session_name> [timeout]"
+        session_wait_exit "$1" "${2:-60}"
         ;;
     bp)
         [ $# -lt 3 ] && error "Usage: $0 bp <session_name> <class> <line>"
