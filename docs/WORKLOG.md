@@ -256,6 +256,50 @@ $ ./jdb_watchpoint.sh --help
 
 ---
 
+## 2026-04-15 Session 7
+
+### 已完成
+1. ✅ 创建jdb_method_breakpoint.sh (20KB)
+ - 方法断点: `set <session> <class> <method> [params] [temp]`
+ - 构造函数断点: `constructor <session> <class> [params]`
+ - 静态初始化断点: `clinit <session> <class>`
+ - 清除断点: `clear`, `clear-all`
+ - 列出断点: `list`, `list-jdb`
+ - 后台监控: `monitor <session> <class> <method> [params] [interval]`
+ - 智能建议: `suggest <session> <class>`
+ - 批量设置: `batch <session> <class> <methods>`
+ - Getter/Setter断点: `getters-setters <session> <class> [field]`
+
+2. ✅ 更新CHECKLIST.md
+ - 标记"方法断点"任务为已完成
+
+### 关键决策
+1. **方法断点实现**:
+ - JDB原生支持方法断点: `stop in <class>.<method>`
+ - 支持方法重载（通过参数类型指定）
+ - 构造函数使用 `<init>` 特殊方法名
+ - 静态初始化块使用 `<clinit>` 特殊方法名
+
+2. **功能设计**:
+ - 批量设置方法断点提高效率
+ - 自动检测getter/setter方法
+ - 方法断点命中后显示有用的调试命令
+
+### 测试结果
+```bash
+$ ./jdb_method_breakpoint.sh --help
+# 显示完整帮助文档
+# 包含方法断点语法、参数类型示例、工作原理说明
+# 语法检查通过
+```
+
+### 下一步
+- [ ] 异常断点 (stop on exception)
+- [ ] 变量监视脚本
+- [ ] 表达式求值脚本
+
+---
+
 ## 模板
 
 ```

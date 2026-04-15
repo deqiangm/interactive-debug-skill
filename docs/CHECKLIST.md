@@ -22,7 +22,7 @@
 - [x] 条件断点 (stop at Class:line if condition)
 - [x] 临时断点 (hit once then remove)
 - [x] 观察点 (watch field access/modification)
-- [ ] 方法断点 (stop in Class.method)
+- [x] 方法断点 (stop in Class.method)
 - [ ] 异常断点 (stop on exception)
 
 ### 2.2 调试辅助功能
