@@ -347,34 +347,34 @@ $ ./jdb_exception_breakpoint.sh common
 
 ### 已完成
 1. ✅ 创建jdb_variable_monitor.sh (21KB)
-   - 单变量监视: `single <session> <var_name>`
-   - 多变量监视: `multi <session> <var1,var2,...>`
-   - 连续监视: `continuous <session> <var_list> [interval] [max_iter]`
-   - 变化检测: `watch <session> <var_list> [interval] [timeout]`
-   - 历史追踪: `history <session> <var_name> <iterations> [interval]`
-   - 历史查看: `show-history <session> <var_name>`
-   - 对象检查: `inspect <session> <object_ref> [depth]`
-   - 对象字段监视: `object-fields <session> <object_ref> <field_list>`
-   - 数组监视: `array <session> <array_name> [start] [end]`
-   - 导出功能: `export <session> <var_list> <output_file>`
-   - Profile管理: `save-profile`, `load-profile`, `list-profiles`
+ - 单变量监视: `single <session> <var_name>`
+ - 多变量监视: `multi <session> <var1,var2,...>`
+ - 连续监视: `continuous <session> <var_list> [interval] [max_iter]`
+ - 变化检测: `watch <session> <var_list> [interval] [timeout]`
+ - 历史追踪: `history <session> <var_name> <iterations> [interval]`
+ - 历史查看: `show-history <session> <var_name>`
+ - 对象检查: `inspect <session> <object_ref> [depth]`
+ - 对象字段监视: `object-fields <session> <object_ref> <field_list>`
+ - 数组监视: `array <session> <array_name> [start] [end]`
+ - 导出功能: `export <session> <var_list> <output_file>`
+ - Profile管理: `save-profile`, `load-profile`, `list-profiles`
 
 2. ✅ 更新CHECKLIST.md
-   - 标记"变量监视脚本"任务为已完成
+ - 标记"变量监视脚本"任务为已完成
 
 ### 关键决策
 1. **变量监视实现**:
-   - 使用JDB的print命令获取变量值
-   - 支持连续监视和变化检测
-   - 历史追踪保存到临时文件
-   - Profile系统保存常用监视配置
+ - 使用JDB的print命令获取变量值
+ - 支持连续监视和变化检测
+ - 历史追踪保存到临时文件
+ - Profile系统保存常用监视配置
 
 2. **功能设计**:
-   - 监视单个/多个变量
-   - 连续监视带自动刷新
-   - 变化检测带警报
-   - 对象和数组专门支持
-   - 导出和Profile管理
+ - 监视单个/多个变量
+ - 连续监视带自动刷新
+ - 变化检测带警报
+ - 对象和数组专门支持
+ - 导出和Profile管理
 
 ### 测试结果
 ```bash
@@ -387,6 +387,40 @@ $ ./jdb_variable_monitor.sh --help
 ### 下一步
 - [ ] 表达式求值脚本
 - [ ] 线程分析脚本
+
+---
+
+## 2026-04-15 Session 10
+
+### 已完成
+1. ✅ 调整项目优先级 - 轻量化设计
+ - 移除Phase 6 LLM集成（本skill就是给LLM用的）
+ - 暂缓Phase 6高级调试模板
+ - 简化Phase 7多Agent适配
+
+2. ✅ 确立轻量化原则
+ - SKILL.md < 5KB
+ - 按需加载脚本
+ - 高级功能按实际使用场景开发
+
+### 关键决策
+1. **优先级调整**:
+ - P0: Go/Node.js基础支持
+ - P1: 精简SKILL.md、CLAUDE.md、.cursorrules
+ - P1: install.sh一键安装
+ - 暂缓: 高级调试模板、Codex/OpenCode适配
+
+2. **轻量化原则**:
+ - 避免撑爆agent的context window
+ - 核心指令精简，详细文档按需查看
+ - 脚本即用即加载
+
+### 下一步（按优先级）
+- [ ] Go (delve) 基础支持 - dlv_session.sh
+- [ ] Node.js 基础支持 - node_session.sh
+- [ ] 精简SKILL.md (< 5KB)
+- [ ] 创建CLAUDE.md
+- [ ] 创建install.sh
 
 ---
 
