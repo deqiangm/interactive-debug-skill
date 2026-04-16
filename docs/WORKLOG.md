@@ -474,6 +474,47 @@ $ ./jdb_expression_eval.sh templates
 
 ---
 
+## 2026-04-15 Session 12
+
+### 已完成
+1. ✅ 创建jdb_thread_analyzer.sh (23KB)
+   - 基本命令: `list`, `info`, `stack`, `stacks`
+   - 分析命令: `stats`, `find`, `search`
+   - 死锁检测: `deadlock`
+   - 状态比较: `save`, `compare`, `saved`
+   - 监控功能: `monitor`
+   - 工具命令: `ids`, `main`, `system`, `pools`
+
+2. ✅ 更新CHECKLIST.md
+   - 标记"线程分析脚本"任务为已完成
+
+### 关键决策
+1. **线程分析实现**:
+   - 使用JDB的`threads`命令获取线程列表
+   - 使用`where`命令获取调用栈
+   - 支持状态统计和死锁检测
+
+2. **功能设计**:
+   - 状态比较功能追踪线程生命周期
+   - 系统线程分析识别JVM内部线程
+   - 线程池分析识别ExecutorService线程
+   - 监控功能实时追踪线程变化
+
+### 测试结果
+```bash
+$ ./jdb_thread_analyzer.sh --help
+# 显示完整帮助文档
+# 包含所有命令说明、线程状态表、示例
+# 语法检查通过
+```
+
+### 下一步
+- [ ] NPE自动定位脚本
+- [ ] Go (delve) 基础支持
+- [ ] Node.js 基础支持
+
+---
+
 ## 模板
 
 ```
