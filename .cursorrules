@@ -1,0 +1,100 @@
+# Interactive Debug Skill - Cursor/Windsurf Rules
+
+## Project Overview
+
+This project provides tmux-based interactive debugging for LLM-driven workflows. It enables AI agents to debug programs by managing debugger sessions through tmux.
+
+## Supported Debuggers
+
+- **Java**: jdb (Java Debugger)
+- **Python**: pdb (Python Debugger)
+- **Go**: dlv (Delve)
+- **Node.js**: node inspect
+
+## Key Concepts
+
+### Poll Mechanism
+
+All debuggers use a poll-based approach to wait for output:
+
+1. Send command to debugger
+2. Poll for output at intervals (default: 0.5s)
+3. Detect completion via:
+   - Prompt pattern match
+   - Output stability (no change)
+   - Timeout
+
+### Session Isolation
+
+Each debug session runs in its own tmux session, allowing:
+- Multiple simultaneous debug sessions
+- Clean isolation between projects
+- Easy cleanup
+
+## Script Locations
+
+```
+languages/
+├── java/scripts/jdb_session.sh
+├── python/scripts/pdb_session.sh
+├── go/scripts/dlv_session.sh
+└── nodejs/scripts/node_session.sh
+```
+
+## Common Patterns
+
+### Creating a Session
+
+```bash
+# Java
+./jdb_session.sh create mysession "jdb -classpath target/classes MyApp"
+
+# Python
+./pdb_session.sh create mysession main.py
+
+# Go
+./dlv_session.sh create mysession ./myprogram
+
+# Node.js
+./node_session.sh create mysession app.js
+```
+
+### Setting Breakpoints
+
+```bash
+# All languages follow similar pattern
+./<debugger>_session.sh bp mysession <location>
+```
+
+### Execution Control
+
+```bash
+# Standard commands: run, step, next, cont
+./<debugger>_session.sh cont mysession
+```
+
+## Best Practices
+
+1. Use appropriate timeouts (30s for startup, 5s for simple operations)
+2. Always compile with debug info (`-g` for Java)
+3. Clean up sessions when done (`cleanup` command)
+4. Verify output after each command before proceeding
+
+## File Structure
+
+```
+~/.hermes/cron/interactive-debug-skill-enhancement/
+├── common/functions.sh       # Core utilities
+├── languages/                # Language-specific scripts
+├── docs/                     # Documentation
+├── SKILL.md                  # Hermes skill definition
+├── CLAUDE.md                 # Claude Code adapter
+└── .cursorrules              # This file
+```
+
+## Debugging Tips
+
+- Check poll output before next command
+- Use longer timeouts for program startup
+- Ensure correct class names for Java (fully qualified)
+- Set breakpoints only on executable lines

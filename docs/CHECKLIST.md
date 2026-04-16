@@ -74,14 +74,14 @@
 > **优先级**: 基础功能优先，保持轻量级
 
 ### 7.1 Core Config Files (优先)
-- [ ] CLAUDE.md — Claude Code适配
-- [ ] SKILL.md — Hermes适配 (精简至<5KB)
-- [ ] .cursorrules — Cursor/Windsurf适配
+- [x] CLAUDE.md — Claude Code适配
+- [x] SKILL.md — Hermes适配 (精简至<5KB)
+- [x] .cursorrules — Cursor/Windsurf适配
 
 ### 7.2 One-Click Install (优先)
-- [ ] 精简SKILL.md内容
+- [x] 精简SKILL.md内容
 - [ ] 发布到Hermes Skills Hub
-- [ ] 创建install.sh脚本
+- [x] 创建install.sh脚本
 
 ### 7.3 Multi-Agent Support (暂缓)
 - [ ] Codex adaptation
