@@ -385,8 +385,58 @@ $ ./jdb_variable_monitor.sh --help
 ```
 
 ### 下一步
-- [ ] 表达式求值脚本
 - [ ] 线程分析脚本
+- [ ] NPE自动定位脚本
+
+---
+
+## 2026-04-15 Session 11
+
+### 已完成
+1. ✅ 创建jdb_expression_eval.sh (31KB)
+   - 基本表达式求值: `eval <session> <expression>`
+   - 格式化输出: `eval-fmt <session> <expr> [format]` (支持json/table)
+   - 批量求值: `batch <session> <expr1;expr2;...>`
+   - 方法调用: `invoke`, `invoke-static`
+   - 数组操作: `array-len`, `array-get`, `array-range`
+   - 对象检查: `class`, `hashcode`, `tostring`, `instanceof`
+   - 集合操作: `coll-size`, `coll-empty`, `list-get`, `map-get`, `map-contains`
+   - 字符串操作: `str-len`, `str-char`, `str-equals`
+   - 类型转换: `cast`
+   - 算术运算: `calc`
+   - 表达式历史: `history`, `clear-history`
+   - 智能建议: `suggest <session> <variable>`
+   - 表达式模板: `templates`
+
+2. ✅ 更新CHECKLIST.md
+   - 标记"表达式求值脚本"任务为已完成
+
+### 关键决策
+1. **表达式求值实现**:
+   - 使用JDB的print/eval命令执行表达式
+   - 支持Java表达式语法
+   - 提供便捷命令封装常用操作
+
+2. **功能设计**:
+   - 分类组织命令（数组、字符串、集合、对象等）
+   - suggest命令根据变量类型提供表达式建议
+   - templates命令显示常用表达式模板
+   - 历史记录便于回溯
+
+### 测试结果
+```bash
+$ ./jdb_expression_eval.sh --help
+# 显示完整帮助文档
+# 包含所有命令说明、示例、注意事项
+
+$ ./jdb_expression_eval.sh templates
+# 显示表达式模板表格
+# 包含数组、字符串、集合、对象、数学等类型
+```
+
+### 下一步
+- [ ] 线程分析脚本
+- [ ] NPE自动定位脚本
 
 ---
 
