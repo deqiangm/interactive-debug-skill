@@ -55,9 +55,9 @@
 
 ## Phase 5: Node.js调试支持
 
-- [ ] node_session.sh
+- [x] node_session.sh
 - [ ] node_remote_attach.sh
-- [ ] node_quick_start.sh
+- [x] node_quick_start.sh
 - [ ] TypeScript source map支持
 
 ---
