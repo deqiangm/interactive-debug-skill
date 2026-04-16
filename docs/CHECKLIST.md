@@ -47,7 +47,7 @@
 
 - [x] dlv_session.sh
 - [ ] dlv_remote_attach.sh
-- [ ] dlv_quick_start.sh
+- [x] dlv_quick_start.sh (集成在dlv_session.sh中)
 - [x] Go module自动解析
 - [x] goroutine调试支持
 
@@ -57,7 +57,7 @@
 
 - [x] node_session.sh
 - [ ] node_remote_attach.sh
-- [x] node_quick_start.sh
+- [x] node_quick_start.sh (集成在node_session.sh中)
 - [ ] TypeScript source map支持
 
 ---
