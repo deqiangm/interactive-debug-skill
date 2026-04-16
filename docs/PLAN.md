@@ -146,7 +146,30 @@ interactive-debug-skill/
 
 ---
 
-## 依赖
+## Phase 7: Multi-Agent Adaptation & One-Click Install (Week 7)
+
+### 7.1 Multi-Agent Adaptation
+- [ ] Claude Code adaptation (CLAUDE.md format)
+- [ ] OpenAI Codex adaptation (CODEX.md format)
+- [ ] OpenCode adaptation
+- [ ] Cursor/Windsurf adaptation (.cursorrules format)
+- [ ] Universal MCP protocol support
+
+### 7.2 One-Click Install Support
+- [ ] Publish to Hermes Skills Hub
+- [ ] Create install script (install.sh)
+- [ ] Support `hermes skills install`
+- [ ] Version management and update mechanism
+
+### 7.3 Agent-Specific Optimizations
+- [ ] Claude Code: Leverage --dangerously-skip-permissions
+- [ ] Codex: Leverage git worktree isolation
+- [ ] Hermes: Leverage tmux session management
+- [ ] Cross-agent compatibility testing
+
+---
+
+## Dependencies
 
 - tmux >= 3.0
 - JDK >= 11 (Java调试)

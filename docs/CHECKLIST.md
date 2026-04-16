@@ -69,6 +69,29 @@
 
 ---
 
+## Phase 7: 多Agent适配与一键安装 (Week 7)
+
+### 7.1 多Agent适配
+- [ ] Claude Code适配 (CLAUDE.md格式)
+- [ ] OpenAI Codex适配 (CODEX.md格式)
+- [ ] OpenCode适配
+- [ ] Cursor/Windsurf适配 (.cursorrules格式)
+- [ ] 通用MCP协议支持
+
+### 7.2 一键安装支持
+- [ ] 发布到Hermes Skills Hub
+- [ ] 创建安装脚本 (install.sh)
+- [ ] 支持hermes skills install
+- [ ] 版本管理与更新机制
+
+### 7.3 Agent特定优化
+- [ ] Claude Code: 利用--dangerously-skip-permissions
+- [ ] Codex: 利用git worktree隔离
+- [ ] Hermes: 利用tmux session管理
+- [ ] 跨Agent兼容性测试
+
+---
+
 ## 测试清单
 
 - [ ] Java冒泡排序调试测试
