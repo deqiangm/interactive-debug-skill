@@ -86,17 +86,16 @@
 
 ---
 
-## Phase 6: 高级功能 (Week 6)
+## Phase 6: 高级调试模板 (Week 6)
 
-### 6.1 LLM集成
-- [ ] 自动问题诊断
-- [ ] 智能断点建议
-- [ ] 代码上下文分析
-- [ ] 根因分析报告
-
-### 6.2 调试模板
+### 6.1 调试模板
 - [ ] 常见问题调试模板 (NPE, deadlock, race condition)
 - [ ] 框架特定调试模板 (Spring, Django, Express)
+
+### 6.2 自动化调试脚本
+- [ ] NPE自动定位脚本
+- [ ] 死锁检测脚本
+- [ ] 性能热点分析脚本
 
 ---
 
@@ -105,17 +104,17 @@
 ```
 interactive-debug-skill/
 ├── common/
-│   ├── functions.sh          # 公共函数库
-│   ├── config.sh             # 配置管理
-│   └── logger.sh             # 日志系统
+│   ├── functions.sh          # Common functions library
+│   ├── config.sh             # Configuration management
+│   └── logger.sh             # Logging system
 ├── languages/
 │   ├── java/
 │   │   ├── scripts/
 │   │   │   ├── jdb_session.sh
 │   │   │   ├── jdb_remote_attach.sh
-│   │   │   ├── jdb_advanced_bp.sh   # 高级断点
-│   │   │   ├── jdb_thread.sh        # 线程分析
-│   │   │   └── jdb_auto_npe.sh      # NPE自动定位
+│   │   │   ├── jdb_advanced_bp.sh  # Advanced breakpoints
+│   │   │   ├── jdb_thread.sh       # Thread analysis
+│   │   │   └── jdb_auto_npe.sh     # NPE auto-detection
 │   │   └── templates/
 │   │       ├── npe_debug.yaml
 │   │       └── deadlock_debug.yaml
@@ -131,12 +130,6 @@ interactive-debug-skill/
 │   └── nodejs/
 │       ├── scripts/
 │       └── templates/
-├── llm/
-│   ├── analyzer.py           # LLM分析器
-│   ├── prompts/
-│   │   ├── diagnosis.yaml
-│   │   └── root_cause.yaml
-│   └── bridge.sh             # LLM桥接
 ├── docs/
 │   ├── JAVA_DEBUG_GUIDE.md
 │   ├── PYTHON_DEBUG_GUIDE.md
@@ -148,6 +141,8 @@ interactive-debug-skill/
 ├── SKILL.md
 └── README.md
 ```
+
+> Note: This skill is designed for LLM agents to use. No additional LLM integration is needed.
 
 ---
 
