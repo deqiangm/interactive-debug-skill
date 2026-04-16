@@ -86,13 +86,15 @@
 
 ---
 
-## Phase 6: 高级调试模板 (Week 6)
+## Phase 6: 高级调试模板 (Week 6) — 暂缓
 
-### 6.1 调试模板
+> **轻量化原则**: 高级功能暂缓开发，待实际使用场景验证后再按需实现。
+
+### 6.1 调试模板 (暂缓)
 - [ ] 常见问题调试模板 (NPE, deadlock, race condition)
 - [ ] 框架特定调试模板 (Spring, Django, Express)
 
-### 6.2 自动化调试脚本
+### 6.2 自动化调试脚本 (暂缓)
 - [ ] NPE自动定位脚本
 - [ ] 死锁检测脚本
 - [ ] 性能热点分析脚本
@@ -148,24 +150,23 @@ interactive-debug-skill/
 
 ## Phase 7: Multi-Agent Adaptation & One-Click Install (Week 7)
 
-### 7.1 Multi-Agent Adaptation
-- [ ] Claude Code adaptation (CLAUDE.md format)
-- [ ] OpenAI Codex adaptation (CODEX.md format)
+> **优先级**: 基础功能优先，多Agent适配为轻量级配置文件。
+
+### 7.1 Core Config Files (优先)
+- [ ] CLAUDE.md — Claude Code适配
+- [ ] SKILL.md — Hermes适配 (已有)
+- [ ] .cursorrules — Cursor/Windsurf适配
+
+### 7.2 One-Click Install (优先)
+- [ ] 精简SKILL.md内容 (< 5KB)
+- [ ] 发布到Hermes Skills Hub
+- [ ] 创建install.sh脚本
+
+### 7.3 Multi-Agent Support (暂缓)
+- [ ] Codex adaptation (CODEX.md)
 - [ ] OpenCode adaptation
-- [ ] Cursor/Windsurf adaptation (.cursorrules format)
 - [ ] Universal MCP protocol support
-
-### 7.2 One-Click Install Support
-- [ ] Publish to Hermes Skills Hub
-- [ ] Create install script (install.sh)
-- [ ] Support `hermes skills install`
-- [ ] Version management and update mechanism
-
-### 7.3 Agent-Specific Optimizations
-- [ ] Claude Code: Leverage --dangerously-skip-permissions
-- [ ] Codex: Leverage git worktree isolation
-- [ ] Hermes: Leverage tmux session management
-- [ ] Cross-agent compatibility testing
+- [ ] Agent-specific optimizations
 
 ---
 
