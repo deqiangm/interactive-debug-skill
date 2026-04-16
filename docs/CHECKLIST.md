@@ -45,11 +45,11 @@
 
 ## Phase 4: Go调试支持
 
-- [ ] dlv_session.sh
+- [x] dlv_session.sh
 - [ ] dlv_remote_attach.sh
 - [ ] dlv_quick_start.sh
-- [ ] Go module自动解析
-- [ ] goroutine调试支持
+- [x] Go module自动解析
+- [x] goroutine调试支持
 
 ---
 
